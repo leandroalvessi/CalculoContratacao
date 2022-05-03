@@ -164,27 +164,27 @@ struct ContentView: View {
                         let IssContratadoAutonomo = (value * 5) / 100
                         let PisCofinsIrpjContratadoPj = (value * 11.33) / 100
                         
-                        var InssDescontoContratado = ""
+                        var InssDescontoContratado = 0.0
                         var InssDescontoContratadoAux = 0.0
                         var InssDescontoContratadoDeduz = 0.0
                         var PerInss = 0
                         if value <= 1659.38 {
                             PerInss = 8
-                            InssDescontoContratado = NumberFormatter.localizedString(from: (value * Double(PerInss)) / 100 as NSNumber, number: .currency)
+                            InssDescontoContratado = (value * Double(PerInss)) / 100
                             InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
                             InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
                         } else if (value >= 1659.39) && (value <= 2765.66) {
                             PerInss = 9
-                            InssDescontoContratado = NumberFormatter.localizedString(from: (value * Double(PerInss)) / 100 as NSNumber, number: .currency)
+                            InssDescontoContratado = (value * Double(PerInss)) / 100
                             InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
                             InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
                         } else if (value >= 2765.67) && (value <= 5531.31) {
                             PerInss = 11
-                            InssDescontoContratado = NumberFormatter.localizedString(from: (value * Double(PerInss)) / 100 as NSNumber, number: .currency)
+                            InssDescontoContratado = (value * Double(PerInss)) / 100
                             InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
                             InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
                         } else if value > 5531.32 {
-                            InssDescontoContratado = NumberFormatter.localizedString(from: 604.44 as NSNumber, number: .currency)
+                            InssDescontoContratado = 604.44
                             InssDescontoContratadoDeduz = 604.44
                             InssDescontoContratadoAux = value - 604.44
                         }
@@ -261,9 +261,9 @@ struct ContentView: View {
                         self.tryToAddToList(title: "Contratado PJ LP/LR: 5%, " + NumberFormatter.localizedString(from: PisCofinsIrpjContratadoPj as NSNumber, number: .currency), ico: "brazilianrealsign.square")
                         
                         self.tryToAddToList(title: "INSS Descontado do Contratado", ico: "number")
-                        self.tryToAddToList(title: "LP/LR VIA CLT: " + PerInssString + InssDescontoContratado, ico: "brazilianrealsign.square")
-                        self.tryToAddToList(title: "Simples CLT: " + PerInssString + InssDescontoContratado, ico: "brazilianrealsign.square")
-                        self.tryToAddToList(title: "Contratado Autônomo: " + PerInssString + InssDescontoContratado, ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "LP/LR VIA CLT: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency), ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "Simples CLT: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency), ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "Contratado Autônomo: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency), ico: "brazilianrealsign.square")
                         
                         if PerIrrf != 0 {
                             self.tryToAddToList(title: "IRRF Descontado do Contratado", ico: "number")
