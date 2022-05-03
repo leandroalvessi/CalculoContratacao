@@ -191,33 +191,27 @@ struct ContentView: View {
                         
                         let PerInssString = PerInss != 0 ? String(PerInss) + "%, " : ""
                         
-                        var IrrfDescontoContratado = ""
-                        var IrrfDescontoContratadoAux = 0.0
+                        var IrrfDescontoContratado = 0.0
                         var PerIrrf = 0.0
                         var Deduz = 0.0
                         if InssDescontoContratadoAux <= 1903.99 {
-                            IrrfDescontoContratado = NumberFormatter.localizedString(from: value - InssDescontoContratadoAux / 100 as NSNumber, number: .currency)
-                            IrrfDescontoContratadoAux = value - InssDescontoContratadoAux / 100
+                            IrrfDescontoContratado = value - InssDescontoContratadoAux / 100
                         } else if (InssDescontoContratadoAux >= 1904.00) && (InssDescontoContratadoAux <= 2826.65) {
                             PerIrrf = 7.5
                             Deduz = 142.80
-                            IrrfDescontoContratado = NumberFormatter.localizedString(from: ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz as NSNumber, number: .currency)
-                            IrrfDescontoContratadoAux = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+                            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
                         } else if (InssDescontoContratadoAux >= 2826.66) && (InssDescontoContratadoAux <= 3751.05) {
                             PerIrrf = 15
                             Deduz = 354.80
-                            IrrfDescontoContratado = NumberFormatter.localizedString(from: ((InssDescontoContratadoAux * Double(PerIrrf)) / 100) - Deduz as NSNumber, number: .currency)
-                            IrrfDescontoContratadoAux = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+                            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
                         } else if (InssDescontoContratadoAux >= 3751.06) && (InssDescontoContratadoAux <= 4664.68) {
                             PerIrrf = 22.5
                             Deduz = 636.13
-                            IrrfDescontoContratado = NumberFormatter.localizedString(from: ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz as NSNumber, number: .currency)
-                            IrrfDescontoContratadoAux = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+                            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
                         } else if InssDescontoContratadoAux > 4664.69{
                             PerIrrf = 27.5
                             Deduz = 869.36
-                            IrrfDescontoContratado = NumberFormatter.localizedString(from: ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz as NSNumber, number: .currency)
-                            IrrfDescontoContratadoAux = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+                            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
                         }
                         
                         let PerIrrfString = PerIrrf != 0 ? String(PerIrrf) + "%, " : ""
@@ -267,15 +261,15 @@ struct ContentView: View {
                         
                         if PerIrrf != 0 {
                             self.tryToAddToList(title: "IRRF Descontado do Contratado", ico: "number")
-                            self.tryToAddToList(title: "LP/LR VIA CLT: " + PerIrrfString + IrrfDescontoContratado, ico: "brazilianrealsign.square")
-                            self.tryToAddToList(title: "Simples CLT: " + PerIrrfString + IrrfDescontoContratado, ico: "brazilianrealsign.square")
-                            self.tryToAddToList(title: "Contratado Autônomo: " + PerIrrfString + IrrfDescontoContratado, ico: "brazilianrealsign.square")
+                            self.tryToAddToList(title: "LP/LR VIA CLT: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency) , ico: "brazilianrealsign.square")
+                            self.tryToAddToList(title: "Simples CLT: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency) , ico: "brazilianrealsign.square")
+                            self.tryToAddToList(title: "Contratado Autônomo: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency) , ico: "brazilianrealsign.square")
                         }
                         
                         self.tryToAddToList(title: "RECTO. LÍQUIDO CONTRATADO", ico: "number")
-                        self.tryToAddToList(title: "LP/LR VIA CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratadoAux) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
-                        self.tryToAddToList(title: "Simples CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratadoAux) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
-                        self.tryToAddToList(title: "Contratado Autônomo: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratadoAux + IssContratadoAutonomo) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "LP/LR VIA CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "Simples CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
+                        self.tryToAddToList(title: "Contratado Autônomo: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado + IssContratadoAutonomo) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
                         self.tryToAddToList(title: "Contratado PJ LP/LR: %" + NumberFormatter.localizedString(from: value - (IssContratadoAutonomo + PisCofinsIrpjContratadoPj) as NSNumber, number: .currency), ico: "brazilianrealsign.square")
                         self.tryToAddToList(title: "Contratado PJ Simples: " + NumberFormatter.localizedString(from: value - SimpesContratadpPjSimples as NSNumber, number: .currency), ico: "brazilianrealsign.square")
                         self.tryToAddToList(title: "Contratado PJ MEI (*5): " + NumberFormatter.localizedString(from: value - 52.00 as NSNumber, number: .currency), ico: "brazilianrealsign.square")
