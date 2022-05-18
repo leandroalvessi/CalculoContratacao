@@ -125,6 +125,7 @@ struct ContentView: View {
         self.numberFormatter.maximumFractionDigits = 2
     }
     
+    @State private var showAlert = false
     var body: some View {
         NavigationView {
             VStack {
@@ -142,9 +143,8 @@ struct ContentView: View {
                         Calcular(color: .green )
                     }
                 )
-                
             }.frame(width: .infinity, height: 0, alignment: .bottom)
-                .navigationTitle("Cálculo Contratação")//.padding()
+                .navigationTitle("Cálculo Contratação")
         }
     }
 }
@@ -165,94 +165,139 @@ struct Screen: View {
     let value: Double
     let per: Int
     
+    func Cal() -> ([Cabecalho]) {
+        if value == 0 {
+            return [Cabecalho(name: "Erro!",
+                              detalhes: [Detalhe(name: "Nenhum valor informado!")])]
+        }
+        
+        let InssEmpregadorViaClt = (value * 28) / 100
+        let InssEmpregadorContratadoAutonomo = (value * Double(per)) / 100
+        var listDetalhe = [Cabecalho(name: "INSS Empregador",
+                          detalhes: [Detalhe(name: "LP/LR VIA CLT: 28%, " + NumberFormatter.localizedString(from: InssEmpregadorViaClt as NSNumber, number: .currency)),
+                                     Detalhe(name: "Contratado Autônomo: \(per)%, " + NumberFormatter.localizedString(from: InssEmpregadorContratadoAutonomo as NSNumber, number: .currency))])]
+        
+        let Fgts = (value * 8) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "FGTS",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: 8%, " + NumberFormatter.localizedString(from: Fgts as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: 8%, " + NumberFormatter.localizedString(from: Fgts as NSNumber, number: .currency))])]
+        
+        let Decimo13SalarioViaClt = (value * 11.33) / 100
+        let Decimo13SalarioFgtsInssSimplesClt = (value * 9) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "13º Salário + Encargos FGTS e INSS",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: 11,33%, " + NumberFormatter.localizedString(from: Decimo13SalarioViaClt as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: 9%, " + NumberFormatter.localizedString(from: Decimo13SalarioFgtsInssSimplesClt as NSNumber, number: .currency))])]
+        
+        let FeriasViaClt = (value * 15.07) / 100
+        let FeriasSimplesClt = (value * 11.97) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "Férias + 1/3 + Encargos FGTS e INSS",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: 11,33%, " + NumberFormatter.localizedString(from: FeriasViaClt as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: 9%, " + NumberFormatter.localizedString(from: FeriasSimplesClt as NSNumber, number: .currency))])]
+        
+        let ProvisaoMultaFgts = (((value * 8) / 100) * 40) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "Provisão Multa FGTS (Caso Demissão)",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: 40%, " + NumberFormatter.localizedString(from: ProvisaoMultaFgts as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: 40%, " + NumberFormatter.localizedString(from: ProvisaoMultaFgts as NSNumber, number: .currency))])]
+                
+        let CustoTotalContratanteViaClt = ((value * 66) / 100) + value
+        let CustoTotalContratanteSimplesClt = ((value * 32) / 100) + value
+        let CustoTotalContratanteContratoAutonomo = ((value * Double(per)) / 100) + value
+        listDetalhe = listDetalhe + [Cabecalho(name: "CUSTO DO TOTAL DO CONTRATANTE",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: 66%, " + NumberFormatter.localizedString(from: CustoTotalContratanteViaClt as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: 32%, " + NumberFormatter.localizedString(from: CustoTotalContratanteSimplesClt as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado Autônomo: \(per)%, " + NumberFormatter.localizedString(from: CustoTotalContratanteContratoAutonomo as NSNumber, number: .currency))])]
+        
+        let SimpesContratadpPjSimples = (value * 4.5) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "Simples do Contratado",
+                            detalhes: [Detalhe(name: "Contratado PJ Simples: 4,5%, " + NumberFormatter.localizedString(from: SimpesContratadpPjSimples as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado PJ MEI (*5): R$ 52,00")])]
+        
+        let IssContratadoAutonomo = (value * 5) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "ISS do Contratado",
+                            detalhes: [Detalhe(name: "Contratado Autônomo: 5%, " + NumberFormatter.localizedString(from: IssContratadoAutonomo as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado PJ LP/LR: 5%, " + NumberFormatter.localizedString(from: IssContratadoAutonomo as NSNumber, number: .currency))])]
+        
+        let PisCofinsIrpjContratadoPj = (value * 11.33) / 100
+        listDetalhe = listDetalhe + [Cabecalho(name: "PIS/COFINS/IRPJ E CS Contratado",
+                            detalhes: [Detalhe(name: "Contratado PJ LP/LR: 5%, " + NumberFormatter.localizedString(from: PisCofinsIrpjContratadoPj as NSNumber, number: .currency))])]
+
+        var InssDescontoContratado = 0.0
+        var InssDescontoContratadoAux = 0.0
+        var InssDescontoContratadoDeduz = 0.0
+        var PerInss = 0
+        if value <= 1659.38 {
+            PerInss = 8
+            InssDescontoContratado = (value * Double(PerInss)) / 100
+            InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
+            InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
+        } else if (value >= 1659.39) && (value <= 2765.66) {
+            PerInss = 9
+            InssDescontoContratado = (value * Double(PerInss)) / 100
+            InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
+            InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
+        } else if (value >= 2765.67) && (value <= 5531.31) {
+            PerInss = 11
+            InssDescontoContratado = (value * Double(PerInss)) / 100
+            InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
+            InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
+        } else if value > 5531.32 {
+            InssDescontoContratado = 604.44
+            InssDescontoContratadoDeduz = 604.44
+            InssDescontoContratadoAux = value - 604.44
+        }
+
+        let PerInssString = PerInss != 0 ? String(PerInss) + "%, " : ""
+        listDetalhe = listDetalhe + [Cabecalho(name: "INSS Descontado do Contratado",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado Autônomo: " + PerInssString + NumberFormatter.localizedString(from: InssDescontoContratado as NSNumber, number: .currency))])]
+
+        var IrrfDescontoContratado = 0.0
+        var PerIrrf = 0.0
+        var Deduz = 0.0
+        if InssDescontoContratadoAux <= 1903.99 {
+            IrrfDescontoContratado = value - InssDescontoContratadoAux / 100
+        } else if (InssDescontoContratadoAux >= 1904.00) && (InssDescontoContratadoAux <= 2826.65) {
+            PerIrrf = 7.5
+            Deduz = 142.80
+            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+        } else if (InssDescontoContratadoAux >= 2826.66) && (InssDescontoContratadoAux <= 3751.05) {
+            PerIrrf = 15
+            Deduz = 354.80
+            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+        } else if (InssDescontoContratadoAux >= 3751.06) && (InssDescontoContratadoAux <= 4664.68) {
+            PerIrrf = 22.5
+            Deduz = 636.13
+            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+        } else if InssDescontoContratadoAux > 4664.69{
+            PerIrrf = 27.5
+            Deduz = 869.36
+            IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
+        }
+
+        if PerIrrf != 0 {
+            let PerIrrfString = PerIrrf != 0 ? String(PerIrrf) + "%, " : ""
+            listDetalhe = listDetalhe + [Cabecalho(name: "IRRF Descontado do Contratado",
+                                detalhes: [Detalhe(name: "LP/LR VIA CLT: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency)),
+                                           Detalhe(name: "Simples CLT: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency)),
+                                           Detalhe(name: "Contratado Autônomo: " + PerIrrfString + NumberFormatter.localizedString(from: IrrfDescontoContratado as NSNumber, number: .currency))])]
+        }
+        
+        listDetalhe = listDetalhe + [Cabecalho(name: "RECTO. LÍQUIDO CONTRATADO",
+                            detalhes: [Detalhe(name: "LP/LR VIA CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado) as NSNumber, number: .currency)),
+                                       Detalhe(name: "Simples CLT: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado) as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado Autônomo: " + NumberFormatter.localizedString(from: value - (InssDescontoContratadoDeduz + IrrfDescontoContratado + IssContratadoAutonomo) as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado PJ LP/LR: %" + NumberFormatter.localizedString(from: value - (IssContratadoAutonomo + PisCofinsIrpjContratadoPj) as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado PJ Simples: " + NumberFormatter.localizedString(from: value - SimpesContratadpPjSimples as NSNumber, number: .currency)),
+                                       Detalhe(name: "Contratado PJ MEI (*5): " + NumberFormatter.localizedString(from: value - 52.00 as NSNumber, number: .currency))])]
+     
+        return listDetalhe
+    }
+    
     var body: some View {
         VStack {
-            let InssEmpregadorViaClt = (value * 28) / 100
-            let InssEmpregadorContratadoAutonomo = (value * Double(per)) / 100
-            let Fgts = (value * 8) / 100
-            let Decimo13SalarioViaClt = (value * 11.33) / 100
-            let Decimo13SalarioFgtsInssSimplesClt = (value * 9) / 100
-            let FeriasViaClt = (value * 15.07) / 100
-            let FeriasSimplesClt = (value * 11.97) / 100
-//            let ProvisaoMultaFgts = (((value * 8) / 100) * 40) / 100
-//            let CustoTotalContratanteViaClt = ((value * 66) / 100) + value
-//            let CustoTotalContratanteSimplesClt = ((value * 32) / 100) + value
-//            let CustoTotalContratanteContratoAutonomo = ((value * Double(per)) / 100) + value
-//            let SimpesContratadpPjSimples = (value * 4.5) / 100
-//            let IssContratadoAutonomo = (value * 5) / 100
-//            let PisCofinsIrpjContratadoPj = (value * 11.33) / 100
-//
-//            var InssDescontoContratado = 0.0
-//            var InssDescontoContratadoAux = 0.0
-//            var InssDescontoContratadoDeduz = 0.0
-//            var PerInss = 0
-//            if value <= 1659.38 {
-//                PerInss = 8
-//                InssDescontoContratado = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
-//            } else if (value >= 1659.39) && (value <= 2765.66) {
-//                PerInss = 9
-//                InssDescontoContratado = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
-//            } else if (value >= 2765.67) && (value <= 5531.31) {
-//                PerInss = 11
-//                InssDescontoContratado = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoDeduz = (value * Double(PerInss)) / 100
-//                InssDescontoContratadoAux = value - ((value * Double(PerInss)) / 100)
-//            } else if value > 5531.32 {
-//                InssDescontoContratado = 604.44
-//                InssDescontoContratadoDeduz = 604.44
-//                InssDescontoContratadoAux = value - 604.44
-//            }
-//
-//            let PerInssString = PerInss != 0 ? String(PerInss) + "%, " : ""
-//
-//            var IrrfDescontoContratado = 0.0
-//            var PerIrrf = 0.0
-//            var Deduz = 0.0
-//            if InssDescontoContratadoAux <= 1903.99 {
-//                IrrfDescontoContratado = value - InssDescontoContratadoAux / 100
-//            } else if (InssDescontoContratadoAux >= 1904.00) && (InssDescontoContratadoAux <= 2826.65) {
-//                PerIrrf = 7.5
-//                Deduz = 142.80
-//                IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
-//            } else if (InssDescontoContratadoAux >= 2826.66) && (InssDescontoContratadoAux <= 3751.05) {
-//                PerIrrf = 15
-//                Deduz = 354.80
-//                IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
-//            } else if (InssDescontoContratadoAux >= 3751.06) && (InssDescontoContratadoAux <= 4664.68) {
-//                PerIrrf = 22.5
-//                Deduz = 636.13
-//                IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
-//            } else if InssDescontoContratadoAux > 4664.69{
-//                PerIrrf = 27.5
-//                Deduz = 869.36
-//                IrrfDescontoContratado = ((InssDescontoContratadoAux * PerIrrf) / 100) - Deduz
-//            }
-//
-//            let PerIrrfString = PerIrrf != 0 ? String(PerIrrf) + "%, " : ""
-            
-            
-            let cabecalhos: [Header] = [
-                Header(name: "INSS Empregador",
-                       detalhes: [Detalhe(name: "LP/LR VIA CLT: 28%, " + NumberFormatter.localizedString(from: InssEmpregadorViaClt as NSNumber, number: .currency)),
-                                  Detalhe(name: "Contratado Autônomo: \(per)%, " + NumberFormatter.localizedString(from: InssEmpregadorContratadoAutonomo as NSNumber, number: .currency))]),
-                Header(name: "FGTS",
-                       detalhes: [Detalhe(name: "LP/LR VIA CLT: 8%, " + NumberFormatter.localizedString(from: Fgts as NSNumber, number: .currency)),
-                                  Detalhe(name: "Simples CLT: 8%, " + NumberFormatter.localizedString(from: Fgts as NSNumber, number: .currency))]),
-                Header(name: "13º Salário + Encargos FGTS e INSS",
-                       detalhes: [Detalhe(name: "LP/LR VIA CLT: 11,33%, " + NumberFormatter.localizedString(from: Decimo13SalarioViaClt as NSNumber, number: .currency)),
-                                  Detalhe(name: "Simples CLT: 9%, " + NumberFormatter.localizedString(from: Decimo13SalarioFgtsInssSimplesClt as NSNumber, number: .currency))]),
-                Header(name: "Férias + 1/3 + Encargos FGTS e INSS",
-                       detalhes: [Detalhe(name: "LP/LR VIA CLT: 11,33%, " + NumberFormatter.localizedString(from: FeriasViaClt as NSNumber, number: .currency)),
-                                  Detalhe(name: "Simples CLT: 9%, " + NumberFormatter.localizedString(from: FeriasSimplesClt as NSNumber, number: .currency))])
-            ]
-            
-            
             List {
-                ForEach(cabecalhos) { region in
+                ForEach(Cal()) { region in
                     Section(header: Text(region.name)) {
                         ForEach(region.detalhes) { detalhe in
                             Text(detalhe.name)
@@ -262,7 +307,6 @@ struct Screen: View {
             }
         }
     }
-    
 }
 
 struct Detalhe: Hashable, Identifiable {
@@ -270,7 +314,7 @@ struct Detalhe: Hashable, Identifiable {
     let id = UUID()
 }
 
-struct Header: Identifiable {
+struct Cabecalho: Identifiable {
     let name: String
     let detalhes: [Detalhe]
     let id = UUID()
